@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+    <script src="../js/sockjs.utility-0.1.js"></script>
+    <script src="./js/foundation.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="./css/foundation.min.css">
+    <style>
+        .send_message_block{
+            /*background: green;*/
+            position: relative;
+        }
+        .send_message_block label , .send_message_block a{
+            top:0px;
+            position: relative;
+        }
+        .float_left{
+            float: left;
+        }
+        .float_right{
+            float: right;
+        }
+        .message_board{
+            /*background:red;*/
+            height: 300px;
+            overflow: scroll;
+            border: #EEE solid 1px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="row">
+        <h1>SockJS 工具使用範例(Utility Example)</h1>
+        <div class="panel clearfix">
+            <div class="large-8 columns message_board">
+                <ul id="message_list">
+                    <li>訊息會顯示在這裡</li>
+                </ul>
+            </div>
+        </div>
+        
+
+        <div class="panel clearfix">
+            <div class="large-8 columns send_message_block">
+                <button type="submit" class="button float_right" id="send_message">傳送訊息</button>
+                <label class="float_right">
+                    <textarea placeholder="輸入訊息" rows="1" cols="55" id="input_message"></textarea>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Init
+        var $message_list = $('#message_list'),
+            $send_message = $('#send_message'),
+            $input_message = $('#input_message');
+
+        var sockjs_url = 'http://socket.server:5566/echo';
+        var opt = {
+            host : sockjs_url
+        };
+        // 使用 SockJSUtility 連線到 SockJS Server
+        var sockjs = SockJSUtility.connect(opt);
+
+        // 接收伺服器訊息
+        sockjs.on('send_from_server' , function (data) {
+            if (data && data.reveive_msg && data.reveive_msg.length > 0) {
+                $message_list.prepend("<li>Send From Server : "+data.reveive_msg+"</li>");
+            }
+        });
+        
+        // 傳送訊息
+        $send_message.on('click' , function (e) {
+            e.preventDefault();
+            var message = $input_message.val();
+            if (message.length > 0) {
+                // 傳送訊息給 Server
+                sockjs.send('send_from_client' , message);
+            }
+            $input_message.val("");
+        });
+
+    </script>
+</body></html>
