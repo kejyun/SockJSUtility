@@ -68,7 +68,7 @@ sockjs_echo.on('connection', function(conn) {
     // Connection 引用延伸套件
     // 可以使用事件傳遞訊息
     SocketManager.ConnUtility(conn);
-    // 可以使用聊天室功能(預設會將所有連線加入到一預設聊天室)
+    // 可以使用聊天室功能(預設會將所有連線加入到預設聊天室"allroom")
     SocketManager.ChatRooms(conn);
 
     // 接收到 Client 端的 "send_from_client" 事件訊息
@@ -166,3 +166,60 @@ console.log(sockjs.connecting);
 | ------------- |:-------------:| -----:|
 | connected      | 是否已連線 (當嘗試連線 Socket Server 時狀態為 true) | false |
 | connecting      | 是否連線中 (當連線成功時狀態為 true) | false |
+
+
+
+## node.js SocketManager Socket管理器 (SocketManager.js)
+
+1. 聊天室功能(Chatroom)
+2. 訊息事件(event message)
+
+
+```javascript
+// 引用 Socket 套件管理工具
+var SocketManager = require('./SocketManager');
+
+// 建立 SockJS Server
+var sockjs_echo = sockjs.createServer();
+
+sockjs_echo.on('connection', function(conn) {
+    // Connection 引用延伸套件
+    // 可以使用事件傳遞訊息
+    SocketManager.ConnUtility(conn);
+    // 可以使用聊天室功能(預設會將所有連線加入到預設聊天室"allroom")
+    SocketManager.ChatRooms(conn);
+
+    // 加入聊天室 "room1"
+    conn.joinRoom('room1');
+    // 離開聊天室
+    conn.leaveRoom('room2');
+
+    // 接收到 Client 端的 "send_from_client" 事件訊息
+    conn.on('send_from_client' , function (message) {
+        var msg = {
+            reveive_msg : message
+        };
+
+        // 廣播訊息給所有連線
+        conn.broadcast_to_all('send_from_server' , msg);
+
+        // 廣播訊息到指定聊天室(除了自己)
+        conn.broadcast_except_self('room1' ,'send_from_server' , msg);
+
+        // 廣播訊息到指定聊天室
+        conn.broadcast('room1' ,'send_from_server' , msg);
+
+        // 自己碎碎念訊息
+        conn.whisper('send_from_server' , msg);
+    });
+});
+```
+
+
+| 方法名稱        | 說明           | 範例  |
+| ------------- |:-------------:| -----:|
+| broadcast_to_all      | 廣播訊息給所有連線 | conn.broadcast_to_all('send_from_server' , msg); |
+| broadcast_except_self      | 廣播訊息到指定聊天室(除了自己) | conn.broadcast_except_self('room1' ,'send_from_server' , msg); |
+| broadcast      | 廣播訊息到指定聊天室 | conn.broadcast('room1' ,'send_from_server' , msg); |
+| whisper      | 自己碎碎念訊息 | conn.whisper('send_from_server' , msg); |
+| on      | 接收事件訊息 | conn.on('send_from_client' , function (message) { console.log(message)} ); |
