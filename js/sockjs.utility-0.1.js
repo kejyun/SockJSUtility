@@ -346,7 +346,6 @@ var SockJSUtility = {};
                         self.disconnecting = false;
                         // 延遲秒數(從頭計算)
                         reconnectionDelay = self.utli_options['reconnection_delay'];
-                        return true;
                     };
 
 
